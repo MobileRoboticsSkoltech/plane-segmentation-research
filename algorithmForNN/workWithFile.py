@@ -1,0 +1,19 @@
+def write_zeros_in_file(count_of_points : int, path_to_new_label_file : str):
+    '''
+    Function creates the initial file 
+    '''
+    with open(path_to_new_label_file, 'w') as file:
+        file.write('0\n' * count_of_points)
+
+def write_ones_to_file_by_index_list(index_list : list, path_to_new_label_file : str):
+    '''
+    Function changes those lines in the file, the point with the index of which belongs to any plane 
+    '''
+    file = open(path_to_new_label_file, 'r')
+    list_strings = file.readlines()
+    file.close()
+    for index in index_list:
+        list_strings[index] = "1\n"
+    file = open(path_to_new_label_file, 'w')
+    file.writelines(list_strings)
+    file.close()
