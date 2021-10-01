@@ -1,6 +1,7 @@
 import open3d as o3d
 import numpy as np
 import os
+import math
 
 from workWithFile import write_zeros_in_file, write_ones_to_file_by_index_list
 
@@ -47,32 +48,90 @@ def create_point_cloud_by_label_list(point_cloud : o3d.geometry.PointCloud, path
         numpy_arr = np.append(numpy_arr, converted_to_numpy_point_cloud, axis=0)
     return convert_numpy_to_point_cloud(numpy_arr)
 
-def segment_plane_from_point_cloud(point_cloud : o3d.geometry.PointCloud, distance : float = 0.1) -> (o3d.geometry.PointCloud, o3d.geometry.PointCloud):
+def segment_plane_from_point_cloud(point_cloud : o3d.geometry.PointCloud, distance : float = 0.1) -> (o3d.geometry.PointCloud, o3d.geometry.PointCloud, list):
     '''
     Function allows you to extract the most visible plane from the point cloud 
     param: distance - Max distance a point can be from the plane model, and still be considered an inlier.
     '''
     try:
-        _, inliers = point_cloud.segment_plane(distance_threshold=distance,
+        plane_model, inliers = point_cloud.segment_plane(distance_threshold=distance,
                                              ransac_n=3,
                                              num_iterations=8000)
     except Exception:
-        return (point_cloud, point_cloud.clear())
+        return (point_cloud, point_cloud.clear(), plane_model)
     inlier_cloud = point_cloud.select_by_index(inliers)
     outlier_cloud = point_cloud.select_by_index(inliers, invert=True)
-    return (inlier_cloud, outlier_cloud)
+    return (inlier_cloud, outlier_cloud, plane_model)
 
-def segment_all_planes_from_point_cloud(point_cloud : o3d.geometry.PointCloud, distance : float = 0.1) -> list:
+def get_area_of_triangle(first_point : np.ndarray, second_point : np.ndarray, third_point : np.ndarray) -> float:
+    '''
+    Get the area of a triangle using Heron's formula
+    '''
+    x1, y1, z1 = first_point
+    x2, y2, z2 = second_point
+    x3, y3, z3 = third_point
+    
+    l1 = math.sqrt((x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2)
+    l2 = math.sqrt((x2 - x3)**2 + (y2 - y3)**2 + (z2 - z3)**2)
+    l3 = math.sqrt((x3 - x1)**2 + (y3 - y1)**2 + (z3 - z1)**2)
+    
+    p = (l1 + l2 + l3)/2
+    area = math.sqrt(p * (p - l1) * (p - l2) * (p - l3))
+    
+    return area
+
+def get_combination(n, k):
+    '''
+    Get combinations 
+    '''
+    d = list(range(0, k))
+    yield d
+    while True:
+        i = k - 1
+        while i >= 0 and d[i] + k - i + 1 > n:
+            i -= 1
+        if i < 0:
+            return
+        d[i] += 1
+        for j in range(i + 1, k):
+            d[j] = d[j - 1] + 1
+        yield d
+
+def get_area_of_plane(plane_model : list, np_array : np.ndarray) -> float:
+    '''
+    The function finds the minimum and approximate area of the current plane 
+    '''
+    min_value = check(plane_model, np_array) * 10
+    points = get_points(plane_model, np_array, min_value)
+
+    if len(points) < 3:
+        return 0
+
+    result_area = 0
+    
+    for combination in get_combination(len(points), 3):
+        first_point = points[combination[0]]
+        second_point = points[combination[1]]
+        third_point = points[combination[2]]
+        
+        current_area = get_S_triangle(first_point, second_point, third_point)
+        
+        if current_area > result_area: result_area = current_area
+    
+    return result_area
+
+def segment_all_planes_from_point_cloud(point_cloud : o3d.geometry.PointCloud, min_count_of_points : int, min_area_of_plane : int, distance : float = 0.1) -> list:
     '''
     Function allows you to get all planes from a given point cloud 
     param: distance - Max distance a point can be from the plane model, and still be considered an inlier.
     '''
     all_planes = []
-    inlier_cloud, outlier_cloud = segment_plane_from_point_cloud(point_cloud, distance)
+    inlier_cloud, outlier_cloud, plane_model = segment_plane_from_point_cloud(point_cloud, distance)
     while outlier_cloud.has_points():
-        all_planes.append(inlier_cloud)
-        inlier_cloud, outlier_cloud = segment_plane_from_point_cloud(outlier_cloud, distance)
-    if (inlier_cloud.has_points()): all_planes.append(inlier_cloud)
+        if len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points and get_area_of_plane(plane_model, convert_point_cloud_to_numpy_array(inlier_cloud)) > min_area_of_plane:
+            all_planes.append(inlier_cloud)
+        inlier_cloud, outlier_cloud, plane_model = segment_plane_from_point_cloud(outlier_cloud, distance)
+    if inlier_cloud.has_points() and len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points and get_area_of_plane(plane_model, convert_point_cloud_to_numpy_array(inlier_cloud)) > min_area_of_plane: all_planes.append(inlier_cloud)
     
     return all_planes
 
@@ -99,20 +158,7 @@ def get_indexes_of_points(current_dict : dict, temp_point_cloud : np.ndarray) ->
         index_list.append(current_dict[triple])
     return index_list
 
-def write_ones_to_file_by_index(index_list : list, path_to_new_label_file : str):
-    '''
-    Function writes 1 with the desired index to the file 
-    '''
-    file = open(path_to_new_label_file, 'r')
-    list_strings = file.readlines()
-    file.close()
-    for index in index_list:
-        list_strings[index] = "1\n"
-    file = open(path_to_new_label_file, 'w')
-    file.writelines(list_strings)
-    file.close()
-
-def create_label_file(current_snapshot : str, path_to_label_file : str, label_list : list, path_to_new_label_file : str):
+def create_label_file(current_snapshot : str, path_to_label_file : str, label_list : list, path_to_new_label_file : str, min_count_of_points : int, min_area_of_plane : int):
     '''
     Function creates a file with binary labels 
     '''
@@ -121,14 +167,14 @@ def create_label_file(current_snapshot : str, path_to_label_file : str, label_li
     write_zeros_in_file(len(numpy_main_point_cloud), path_to_new_label_file)
     current_dict = create_dictionary_of_point_cloud(main_point_cloud)
     current_point_cloud = create_point_cloud_by_label_list(main_point_cloud, path_to_label_file, label_list)
-    planes_list = segment_all_planes_from_point_cloud(current_point_cloud, 0.3)
+    planes_list = segment_all_planes_from_point_cloud(current_point_cloud, min_count_of_points, min_area_of_plane, 0.3)
     
     for plane in planes_list:
         numpy_plane = convert_point_cloud_to_numpy_array(plane)
         index_list = get_indexes_of_points(current_dict, numpy_plane)
-        write_ones_to_file_by_index(index_list, path_to_new_label_file)
+        write_ones_to_file_by_index_list(index_list, path_to_new_label_file)
 
-def main_function_to_make_label_files(path_to_data_folder : str, path_to_label_folder : str, path_to_new_label_folder : str, label_list : list):
+def main_function_to_make_label_files(path_to_data_folder : str, path_to_label_folder : str, path_to_new_label_folder : str, label_list : list, min_count_of_points : int, min_area_of_plane : int):
     '''
     Function for data folder and label folder creates a new label folder 
     '''
@@ -149,4 +195,4 @@ def main_function_to_make_label_files(path_to_data_folder : str, path_to_label_f
             current_label_file = path_to_label_folder + file_index + ".label"
             current_new_label_file = path_to_new_label_folder + "/" + file_index + ".txt"
 
-            create_label_file(current_bin_file, current_label_file, label_list, current_new_label_file)
+            create_label_file(current_bin_file, current_label_file, label_list, current_new_label_file, min_count_of_points, min_area_of_plane)

@@ -9,6 +9,9 @@ BUILDING_LABEL = 50
 TERRAIN_LABEL = 72
 FENCE_LABEL = 51
 
+COUNT_OF_POINTS_PER_PLANE = 1000
+AREA_OF_EACH_PLANE = 10
+
 PLANE_LIST = [ROAD_LABEL, SIDEWALK_LABEL, PARKING_LABEL, BUILDING_LABEL, TERRAIN_LABEL, FENCE_LABEL]
 
 def help_message():
@@ -38,7 +41,7 @@ if __name__ == "__main__":
             else:
                 raise Exception("Unknown command")
 
-        main_function_to_make_label_files(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST)
+        main_function_to_make_label_files(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST, COUNT_OF_POINTS_PER_PLANE, AREA_OF_EACH_PLANE)
         print("Success :)")
     else:
         raise Exception("Unknown command set")
