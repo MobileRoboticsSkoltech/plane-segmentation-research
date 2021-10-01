@@ -19,8 +19,6 @@ def help_message():
     print("-PATH_TO_NEW_LABEL_FOLDER=--PATH-- : Enter the path to the folder where you want to save the textbooks. The folder will be created by itself!")
     print("---------------------------------------------------")
 
-# python3 main.py -PATH_TO_DATA_FOLDER=/home/pavel/dataset/sequences/00/velodyne/ -PATH_TO_LABEL_FOLDER=/home/pavel/Downloads/dataset/sequences/00/labels/ -PATH_TO_NEW_LABEL_FOLDER=/home/pavel/Documents/datalabels
-
 if __name__ == "__main__":
     if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
         help_message()
