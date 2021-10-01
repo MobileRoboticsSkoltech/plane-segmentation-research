@@ -1,5 +1,6 @@
 import sys
-from workWithPointCloud import main_function_to_make_label_files
+import argparse
+from pointCloudUtils import main_function_to_make_label_files
 
 # In my opinion - objects with these labels are planes, you can expand this
 ROAD_LABEL = 40
@@ -14,34 +15,28 @@ AREA_OF_EACH_PLANE = 10
 
 PLANE_LIST = [ROAD_LABEL, SIDEWALK_LABEL, PARKING_LABEL, BUILDING_LABEL, TERRAIN_LABEL, FENCE_LABEL]
 
-def help_message():
-    print("---------------------------------------------------")
-    print("The existing arguments for using the algorithm are:")
-    print("-PATH_TO_DATA_FOLDER=--PATH-- : Enter the path where the folder with .bin files is located")
-    print("-PATH_TO_LABEL_FOLDER=--PATH-- : Enter the path where the folder with .label files is located")
-    print("-PATH_TO_NEW_LABEL_FOLDER=--PATH-- : Enter the path to the folder where you want to save the textbooks. The folder will be created by itself!")
-    print("---------------------------------------------------")
-
 if __name__ == "__main__":
-    if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
-        help_message()
-    elif len(sys.argv) == 4:
-        PATH_TO_DATA_FOLDER = ""
-        PATH_TO_LABEL_FOLDER = ""
-        PATH_TO_NEW_LABEL_FOLDER = ""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-PATH_TO_DATA_FOLDER",
+                        type=str,
+                        help="Enter the path where the folder with .bin files is located",
+                        dest="PATH_TO_DATA_FOLDER",
+                        required=True)
+    parser.add_argument("-PATH_TO_LABEL_FOLDER",
+                        type=str,
+                        help="Enter the path where the folder with .label files is located",
+                        dest="PATH_TO_LABEL_FOLDER",
+                        required=True)
+    parser.add_argument("-PATH_TO_NEW_LABEL_FOLDER",
+                        type=str,
+                        help="Enter the path to the folder where you want to save the textbooks. The folder will be created by itself!",
+                        dest="PATH_TO_NEW_LABEL_FOLDER",
+                        required=True)
+    args = parser.parse_args()
+    
+    PATH_TO_DATA_FOLDER = args.PATH_TO_DATA_FOLDER
+    PATH_TO_LABEL_FOLDER = args.PATH_TO_LABEL_FOLDER
+    PATH_TO_NEW_LABEL_FOLDER = args.PATH_TO_NEW_LABEL_FOLDER
 
-        for idx in range(1, len(sys.argv)):
-            current_command = sys.argv[idx].split("=")
-            if current_command[0] == "-PATH_TO_DATA_FOLDER":
-                PATH_TO_DATA_FOLDER = current_command[1]
-            elif current_command[0] == "-PATH_TO_LABEL_FOLDER":
-                PATH_TO_LABEL_FOLDER = current_command[1]
-            elif current_command[0] == "-PATH_TO_NEW_LABEL_FOLDER":
-                PATH_TO_NEW_LABEL_FOLDER = current_command[1]
-            else:
-                raise Exception("Unknown command")
-
-        main_function_to_make_label_files(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST, COUNT_OF_POINTS_PER_PLANE, AREA_OF_EACH_PLANE)
-        print("Success :)")
-    else:
-        raise Exception("Unknown command set")
+    create_all_label_files_by_folder(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST, COUNT_OF_POINTS_PER_PLANE, AREA_OF_EACH_PLANE)
+    print("Success :)")

@@ -20,7 +20,7 @@ def convert_point_cloud_to_numpy_array(point_cloud : o3d.geometry.PointCloud) ->
     '''
     return np.asarray(point_cloud.points)
 
-def convert_numpy_to_point_cloud(numpy_array : np.ndarray) -> o3d.geometry.PointCloud:
+def convert_numpy_array_to_point_cloud(numpy_array : np.ndarray) -> o3d.geometry.PointCloud:
     '''
     Function converts numpy array to a point cloud 
     '''
@@ -174,7 +174,7 @@ def create_label_file(current_snapshot : str, path_to_label_file : str, label_li
         index_list = get_indexes_of_points(current_dict, numpy_plane)
         write_ones_to_file_by_index_list(index_list, path_to_new_label_file)
 
-def main_function_to_make_label_files(path_to_data_folder : str, path_to_label_folder : str, path_to_new_label_folder : str, label_list : list, min_count_of_points : int, min_area_of_plane : int):
+def create_all_label_files_by_folder(path_to_data_folder : str, path_to_label_folder : str, path_to_new_label_folder : str, label_list : list, min_count_of_points : int, min_area_of_plane : int):
     '''
     Function for data folder and label folder creates a new label folder 
     '''
