@@ -1,6 +1,6 @@
 import sys
 import argparse
-from pointCloudUtils import main_function_to_make_label_files
+from pointCloudUtils import create_all_label_files_by_folder
 
 # In my opinion - objects with these labels are planes, you can expand this
 ROAD_LABEL = 40
