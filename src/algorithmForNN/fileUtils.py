@@ -10,11 +10,9 @@ def write_ones_to_file_by_index_list(index_list: list, path_to_new_label_file: s
     """
     Function changes those lines in the file, the point with the index of which belongs to any plane
     """
-    file = open(path_to_new_label_file, 'r')
-    list_strings = file.readlines()
-    file.close()
+    with open(path_to_new_label_file, 'r') as file:
+        list_strings = file.readlines()
     for index in index_list:
         list_strings[index] = "1\n"
-    file = open(path_to_new_label_file, 'w')
-    file.writelines(list_strings)
-    file.close()
+    with open(path_to_new_label_file, 'w') as file:
+        file.writelines(list_strings)
