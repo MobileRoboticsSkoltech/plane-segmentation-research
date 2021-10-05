@@ -3,7 +3,7 @@ import numpy as np
 import os
 import math
 
-from workWithFile import write_zeros_in_file, write_ones_to_file_by_index_list
+from fileUtils import write_zeros_in_file, write_ones_to_file_by_index_list
 
 def get_point_cloud_from_bin_file(path_to_bin_file : str) -> o3d.geometry.PointCloud:
     '''
@@ -46,7 +46,7 @@ def create_point_cloud_by_label_list(point_cloud : o3d.geometry.PointCloud, path
         current_point_cloud = select_points_from_point_cloud_by_label_id(point_cloud, path_to_label_file, label)
         converted_to_numpy_point_cloud = convert_point_cloud_to_numpy_array(current_point_cloud)
         numpy_arr = np.append(numpy_arr, converted_to_numpy_point_cloud, axis=0)
-    return convert_numpy_to_point_cloud(numpy_arr)
+    return convert_numpy_array_to_point_cloud(numpy_arr)
 
 def segment_plane_from_point_cloud(point_cloud : o3d.geometry.PointCloud, distance : float = 0.1) -> (o3d.geometry.PointCloud, o3d.geometry.PointCloud, list):
     '''
@@ -99,26 +99,26 @@ def get_combination(n, k):
 
 def get_area_of_plane(plane_model : list, np_array : np.ndarray) -> float:
     '''
-    The function finds the minimum and approximate area of the current plane 
+    Переделать эту функцию!
     '''
-    min_value = check(plane_model, np_array) * 10
-    points = get_points(plane_model, np_array, min_value)
-
-    if len(points) < 3:
-        return 0
-
-    result_area = 0
-    
-    for combination in get_combination(len(points), 3):
-        first_point = points[combination[0]]
-        second_point = points[combination[1]]
-        third_point = points[combination[2]]
-        
-        current_area = get_S_triangle(first_point, second_point, third_point)
-        
-        if current_area > result_area: result_area = current_area
-    
-    return result_area
+    # min_value = check(plane_model, np_array) * 10
+    # points = get_points(plane_model, np_array, min_value)
+    #
+    # if len(points) < 3:
+    #     return 0
+    #
+    # result_area = 0
+    #
+    # for combination in get_combination(len(points), 3):
+    #     first_point = points[combination[0]]
+    #     second_point = points[combination[1]]
+    #     third_point = points[combination[2]]
+    #
+    #     current_area = get_area_of_triangle(first_point, second_point, third_point)
+    #
+    #     if current_area > result_area: result_area = current_area
+    #
+    return 10
 
 def segment_all_planes_from_point_cloud(point_cloud : o3d.geometry.PointCloud, min_count_of_points : int, min_area_of_plane : int, distance : float = 0.1) -> list:
     '''

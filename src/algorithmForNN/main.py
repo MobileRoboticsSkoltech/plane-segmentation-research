@@ -1,4 +1,3 @@
-import sys
 import argparse
 from pointCloudUtils import create_all_label_files_by_folder
 
