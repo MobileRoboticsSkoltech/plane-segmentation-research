@@ -28,14 +28,16 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument("-PATH_TO_NEW_LABEL_FOLDER",
                         type=str,
-                        help="Enter the path to the folder where you want to save the textbooks. The folder will be created by itself!",
+                        help="Enter the path to the folder where you want to save the textbooks. The folder will be "
+                             "created by itself!",
                         dest="PATH_TO_NEW_LABEL_FOLDER",
                         required=True)
     args = parser.parse_args()
-    
+
     PATH_TO_DATA_FOLDER = args.PATH_TO_DATA_FOLDER
     PATH_TO_LABEL_FOLDER = args.PATH_TO_LABEL_FOLDER
     PATH_TO_NEW_LABEL_FOLDER = args.PATH_TO_NEW_LABEL_FOLDER
 
-    create_all_label_files_by_folder(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST, COUNT_OF_POINTS_PER_PLANE, AREA_OF_EACH_PLANE)
+    create_all_label_files_by_folder(PATH_TO_DATA_FOLDER, PATH_TO_LABEL_FOLDER, PATH_TO_NEW_LABEL_FOLDER, PLANE_LIST,
+                                     COUNT_OF_POINTS_PER_PLANE, AREA_OF_EACH_PLANE)
     print("Success :)")
