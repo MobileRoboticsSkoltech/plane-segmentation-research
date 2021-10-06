@@ -1,7 +1,7 @@
 import open3d as o3d
 import numpy as np
 import os
-import math
+from math import sqrt, pow
 
 from fileUtils import write_zeros_in_file, write_ones_to_file_by_index_list
 
@@ -212,24 +212,25 @@ def get_indexes_of_points(current_dict: dict, temp_point_cloud: np.ndarray) -> l
     return index_list
 
 
-def project_points_from_numpy_array_to_plane(
+def project_point_from_point_cloud_to_2d_plane_point_cloud(
     point_cloud: o3d.geometry.PointCloud, plane_model: list
-) -> o3d.geometry.PointCloud:
-    """
-    Function projects a point cloud onto a plane
-    """
+) -> np.ndarray:
     point_cloud_numpy = convert_point_cloud_to_numpy_array(point_cloud)
     plane = np.array(plane_model[:3])
-    n_norm = np.sqrt(sum(plane ** 2))
+    unit_plane = plane / sqrt(pow(plane[0], 2) + pow(plane[1], 2) + pow(plane[2], 2))
+    x = np.array([1, 0, 0])
+    x = x - np.dot(x, unit_plane) * unit_plane
+    x /= sqrt((x ** 2).sum())
+    y = np.cross(unit_plane, x)
     projects_points = []
 
     for point in point_cloud_numpy:
-        proj_of_point_on_plane = (np.dot(point, plane) / n_norm ** 2) * plane
-        temp_point = point - proj_of_point_on_plane
-        projects_points.append([temp_point[0], temp_point[1], temp_point[2]])
+        temp_point = np.array([np.dot(point, x), np.dot(point, y)])
+        projects_points.append([temp_point[0], temp_point[1]])
 
     projects_points = np.array(projects_points)
-    return convert_numpy_array_to_point_cloud(projects_points)
+
+    return projects_points
 
 
 def create_label_file(
