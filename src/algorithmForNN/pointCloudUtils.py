@@ -2,6 +2,8 @@ import open3d as o3d
 import numpy as np
 import os
 from math import sqrt, pow
+from scipy.spatial import ConvexHull
+from scipy.ndimage.interpolation import rotate
 
 from fileUtils import write_zeros_in_file, write_ones_to_file_by_index_list
 
@@ -80,72 +82,65 @@ def segment_plane_from_point_cloud(
             distance_threshold=distance, ransac_n=3, num_iterations=8000
         )
     except Exception:
-        return point_cloud, point_cloud.clear(), plane_model
+        return point_cloud, point_cloud.clear(), [0, 0, 0, 0]
     inlier_cloud = point_cloud.select_by_index(inliers)
     outlier_cloud = point_cloud.select_by_index(inliers, invert=True)
     return inlier_cloud, outlier_cloud, plane_model
 
 
-def get_area_of_triangle(
-    first_point: np.ndarray, second_point: np.ndarray, third_point: np.ndarray
-) -> float:
-    """
-    Get the area of a triangle using Heron's formula
-    """
-    x1, y1, z1 = first_point
-    x2, y2, z2 = second_point
-    x3, y3, z3 = third_point
+def get_area_of_plane(points: o3d.geometry.PointCloud, plane_model: list) -> float:
+    points = project_point_from_point_cloud_to_2d_plane_point_cloud(points, plane_model)
 
-    l1 = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-    l2 = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2 + (z2 - z3) ** 2)
-    l3 = math.sqrt((x3 - x1) ** 2 + (y3 - y1) ** 2 + (z3 - z1) ** 2)
+    pi2 = np.pi / 2.0
 
-    p = (l1 + l2 + l3) / 2
-    area = math.sqrt(p * (p - l1) * (p - l2) * (p - l3))
+    hull_points = points[ConvexHull(points).vertices]
 
-    return area
+    edges = np.zeros((len(hull_points) - 1, 2))
+    edges = hull_points[1:] - hull_points[:-1]
 
+    angles = np.zeros((len(edges)))
+    angles = np.arctan2(edges[:, 1], edges[:, 0])
 
-def get_combination(n, k):
-    """
-    Get combinations
-    """
-    d = list(range(0, k))
-    yield d
-    while True:
-        i = k - 1
-        while i >= 0 and d[i] + k - i + 1 > n:
-            i -= 1
-        if i < 0:
-            return
-        d[i] += 1
-        for j in range(i + 1, k):
-            d[j] = d[j - 1] + 1
-        yield d
+    angles = np.abs(np.mod(angles, pi2))
+    angles = np.unique(angles)
 
+    rotations = np.vstack(
+        [np.cos(angles), np.cos(angles - pi2), np.cos(angles + pi2), np.cos(angles)]
+    ).T
+    rotations = rotations.reshape((-1, 2, 2))
 
-def get_area_of_plane(plane_model: list, np_array: np.ndarray) -> float:
-    """
-    Переделать эту функцию!
-    """
-    # min_value = check(plane_model, np_array) * 10
-    # points = get_points(plane_model, np_array, min_value)
-    #
-    # if len(points) < 3:
-    #     return 0
-    #
-    # result_area = 0
-    #
-    # for combination in get_combination(len(points), 3):
-    #     first_point = points[combination[0]]
-    #     second_point = points[combination[1]]
-    #     third_point = points[combination[2]]
-    #
-    #     current_area = get_area_of_triangle(first_point, second_point, third_point)
-    #
-    #     if current_area > result_area: result_area = current_area
-    #
-    return 10
+    rot_points = np.dot(rotations, hull_points.T)
+
+    min_x = np.nanmin(rot_points[:, 0], axis=1)
+    max_x = np.nanmax(rot_points[:, 0], axis=1)
+    min_y = np.nanmin(rot_points[:, 1], axis=1)
+    max_y = np.nanmax(rot_points[:, 1], axis=1)
+
+    areas = (max_x - min_x) * (max_y - min_y)
+    best_idx = np.argmin(areas)
+
+    x1 = max_x[best_idx]
+    x2 = min_x[best_idx]
+    y1 = max_y[best_idx]
+    y2 = min_y[best_idx]
+    r = rotations[best_idx]
+
+    rval = np.zeros((4, 2))
+    rval[0] = np.dot([x1, y2], r)
+    rval[1] = np.dot([x2, y2], r)
+    rval[2] = np.dot([x2, y1], r)
+    rval[3] = np.dot([x1, y1], r)
+
+    current_set = set()
+    for i in range(4):
+        current_set.add(
+            sqrt(pow(rval[1][0] - rval[i][0], 2) + pow(rval[1][1] - rval[i][1], 2))
+        )
+
+    current_list = list(current_set)
+    current_list.sort()
+
+    return current_list[1] * current_list[2]
 
 
 def segment_all_planes_from_point_cloud(
@@ -165,10 +160,7 @@ def segment_all_planes_from_point_cloud(
     while outlier_cloud.has_points():
         if (
             len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points
-            and get_area_of_plane(
-                plane_model, convert_point_cloud_to_numpy_array(inlier_cloud)
-            )
-            > min_area_of_plane
+            and get_area_of_plane(inlier_cloud, plane_model) > min_area_of_plane
         ):
             all_planes.append(inlier_cloud)
         inlier_cloud, outlier_cloud, plane_model = segment_plane_from_point_cloud(
@@ -177,10 +169,7 @@ def segment_all_planes_from_point_cloud(
     if (
         inlier_cloud.has_points()
         and len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points
-        and get_area_of_plane(
-            plane_model, convert_point_cloud_to_numpy_array(inlier_cloud)
-        )
-        > min_area_of_plane
+        and get_area_of_plane(inlier_cloud, plane_model) > min_area_of_plane
     ):
         all_planes.append(inlier_cloud)
 
