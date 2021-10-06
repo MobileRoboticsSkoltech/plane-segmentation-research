@@ -146,7 +146,7 @@ def get_area_of_plane(points: o3d.geometry.PointCloud, plane_model: list) -> flo
 def segment_all_planes_from_point_cloud(
     point_cloud: o3d.geometry.PointCloud,
     min_count_of_points: int,
-    min_area_of_plane: int,
+    min_area_of_plane: float,
     distance: float = 0.1,
 ) -> list:
     """
@@ -228,7 +228,7 @@ def create_label_file(
     label_list: list,
     path_to_new_label_file: str,
     min_count_of_points: int,
-    min_area_of_plane: int,
+    min_area_of_plane: float,
 ):
     """
     Function creates a file with binary labels
@@ -256,7 +256,7 @@ def create_all_label_files_by_folder(
     path_to_new_label_folder: str,
     label_list: list,
     min_count_of_points: int,
-    min_area_of_plane: int,
+    min_area_of_plane: float,
 ):
     """
     Function for data folder and label folder creates a new label folder
