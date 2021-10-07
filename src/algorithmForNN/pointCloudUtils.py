@@ -12,11 +12,11 @@ def get_point_cloud_from_bin_file(path_to_bin_file: str) -> o3d.geometry.PointCl
     """
     Function allows you to get a point cloud from a file with lidar data
     """
-    point_cloud_np = np.fromfile(path_to_bin_file, dtype=np.float32).reshape(-1, 4)[
+    point_cloud_numpy = np.fromfile(path_to_bin_file, dtype=np.float32).reshape(-1, 4)[
         :, :3
     ]
     point_cloud = o3d.geometry.PointCloud()
-    point_cloud.points = o3d.utility.Vector3dVector(point_cloud_np[:, :3])
+    point_cloud.points = o3d.utility.Vector3dVector(point_cloud_numpy[:, :3])
     return point_cloud
 
 
@@ -35,9 +35,9 @@ def convert_numpy_array_to_point_cloud(
     """
     Function converts numpy array to a point cloud
     """
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(numpy_array)
-    return pcd
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(numpy_array)
+    return point_cloud
 
 
 def select_points_from_point_cloud_by_label_id(
@@ -48,8 +48,10 @@ def select_points_from_point_cloud_by_label_id(
     """
     labels = np.fromfile(path_to_label_file, dtype=np.uint32)
     labels = labels.reshape((-1))
-    pcd_point_by_id = point_cloud.select_by_index(np.where(labels == label_id)[0])
-    return pcd_point_by_id
+    point_cloud_point_by_id = point_cloud.select_by_index(
+        np.where(labels == label_id)[0]
+    )
+    return point_cloud_point_by_id
 
 
 def create_point_cloud_by_label_list(
@@ -58,7 +60,7 @@ def create_point_cloud_by_label_list(
     """
     Function allows you to get points with the labels that we need
     """
-    numpy_arr = np.empty((0, 3), float)
+    numpy_array = np.empty((0, 3), float)
     for label in label_list:
         current_point_cloud = select_points_from_point_cloud_by_label_id(
             point_cloud, path_to_label_file, label
@@ -66,8 +68,8 @@ def create_point_cloud_by_label_list(
         converted_to_numpy_point_cloud = convert_point_cloud_to_numpy_array(
             current_point_cloud
         )
-        numpy_arr = np.append(numpy_arr, converted_to_numpy_point_cloud, axis=0)
-    return convert_numpy_array_to_point_cloud(numpy_arr)
+        numpy_array = np.append(numpy_array, converted_to_numpy_point_cloud, axis=0)
+    return convert_numpy_array_to_point_cloud(numpy_array)
 
 
 def segment_plane_from_point_cloud(
@@ -86,6 +88,26 @@ def segment_plane_from_point_cloud(
     inlier_cloud = point_cloud.select_by_index(inliers)
     outlier_cloud = point_cloud.select_by_index(inliers, invert=True)
     return inlier_cloud, outlier_cloud, plane_model
+
+
+def project_point_from_point_cloud_to_2d_plane_point_cloud(
+    point_cloud: o3d.geometry.PointCloud, plane_model: list
+) -> np.ndarray:
+    point_cloud_numpy = convert_point_cloud_to_numpy_array(point_cloud)
+    plane = np.array(plane_model[:3])
+    unit_plane = plane / sqrt(pow(plane[0], 2) + pow(plane[1], 2) + pow(plane[2], 2))
+    x = np.array([1, 0, 0])
+    x = x - np.dot(x, unit_plane) * unit_plane
+    x /= sqrt((x ** 2).sum())
+    y = np.cross(unit_plane, x)
+    projects_points = []
+
+    for point in point_cloud_numpy:
+        projects_points.append([np.dot(point, x), np.dot(point, y)])
+
+    projects_points = np.array(projects_points)
+
+    return projects_points
 
 
 def get_area_of_plane(points: o3d.geometry.PointCloud, plane_model: list) -> float:
@@ -131,13 +153,12 @@ def get_area_of_plane(points: o3d.geometry.PointCloud, plane_model: list) -> flo
     rval[2] = np.dot([x2, y1], r)
     rval[3] = np.dot([x1, y1], r)
 
-    current_set = set()
+    current_list = []
     for i in range(4):
-        current_set.add(
+        current_list.append(
             sqrt(pow(rval[1][0] - rval[i][0], 2) + pow(rval[1][1] - rval[i][1], 2))
         )
 
-    current_list = list(current_set)
     current_list.sort()
 
     return current_list[1] * current_list[2]
@@ -159,7 +180,7 @@ def segment_all_planes_from_point_cloud(
     )
     while outlier_cloud.has_points():
         if (
-            len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points
+            len(inlier_cloud.points) > min_count_of_points
             and get_area_of_plane(inlier_cloud, plane_model) > min_area_of_plane
         ):
             all_planes.append(inlier_cloud)
@@ -168,7 +189,7 @@ def segment_all_planes_from_point_cloud(
         )
     if (
         inlier_cloud.has_points()
-        and len(convert_point_cloud_to_numpy_array(inlier_cloud)) > min_count_of_points
+        and len(inlier_cloud.points) > min_count_of_points
         and get_area_of_plane(inlier_cloud, plane_model) > min_area_of_plane
     ):
         all_planes.append(inlier_cloud)
@@ -190,36 +211,16 @@ def create_dictionary_of_point_cloud(point_cloud: o3d.geometry.PointCloud) -> di
     return result_dictionary
 
 
-def get_indexes_of_points(current_dict: dict, temp_point_cloud: np.ndarray) -> list:
+def append_indexes_list_of_points(
+    main_index_list: list, current_dict: dict, temp_point_cloud: np.ndarray
+) -> list:
     """
     Function finds the indices of the required points
     """
-    index_list = []
     for point in temp_point_cloud:
         triple = (point[0], point[1], point[2])
-        index_list.append(current_dict[triple])
-    return index_list
-
-
-def project_point_from_point_cloud_to_2d_plane_point_cloud(
-    point_cloud: o3d.geometry.PointCloud, plane_model: list
-) -> np.ndarray:
-    point_cloud_numpy = convert_point_cloud_to_numpy_array(point_cloud)
-    plane = np.array(plane_model[:3])
-    unit_plane = plane / sqrt(pow(plane[0], 2) + pow(plane[1], 2) + pow(plane[2], 2))
-    x = np.array([1, 0, 0])
-    x = x - np.dot(x, unit_plane) * unit_plane
-    x /= sqrt((x ** 2).sum())
-    y = np.cross(unit_plane, x)
-    projects_points = []
-
-    for point in point_cloud_numpy:
-        temp_point = np.array([np.dot(point, x), np.dot(point, y)])
-        projects_points.append([temp_point[0], temp_point[1]])
-
-    projects_points = np.array(projects_points)
-
-    return projects_points
+        main_index_list.append(current_dict[triple])
+    return main_index_list
 
 
 def create_label_file(
@@ -234,8 +235,7 @@ def create_label_file(
     Function creates a file with binary labels
     """
     main_point_cloud = get_point_cloud_from_bin_file(current_snapshot)
-    numpy_main_point_cloud = convert_point_cloud_to_numpy_array(main_point_cloud)
-    write_zeros_in_file(len(numpy_main_point_cloud), path_to_new_label_file)
+    point_cloud_size = len(main_point_cloud.points)
     current_dict = create_dictionary_of_point_cloud(main_point_cloud)
     current_point_cloud = create_point_cloud_by_label_list(
         main_point_cloud, path_to_label_file, label_list
@@ -243,11 +243,17 @@ def create_label_file(
     planes_list = segment_all_planes_from_point_cloud(
         current_point_cloud, min_count_of_points, min_area_of_plane, 0.3
     )
+    main_index_list = []
 
     for plane in planes_list:
         numpy_plane = convert_point_cloud_to_numpy_array(plane)
-        index_list = get_indexes_of_points(current_dict, numpy_plane)
-        write_ones_to_file_by_index_list(index_list, path_to_new_label_file)
+        main_index_list = append_indexes_list_of_points(
+            main_index_list, current_dict, numpy_plane
+        )
+
+    write_ones_to_file_by_index_list(
+        point_cloud_size, main_index_list, path_to_new_label_file
+    )
 
 
 def create_all_label_files_by_folder(
