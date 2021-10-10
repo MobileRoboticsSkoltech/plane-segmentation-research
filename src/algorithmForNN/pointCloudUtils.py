@@ -5,8 +5,6 @@ from math import sqrt, pow
 from scipy.spatial import ConvexHull
 from scipy.ndimage.interpolation import rotate
 
-from fileUtils import write_zeros_in_file, get_point_cloud_from_bin_file
-
 
 def convert_point_cloud_to_numpy_array(
     point_cloud: o3d.geometry.PointCloud,
