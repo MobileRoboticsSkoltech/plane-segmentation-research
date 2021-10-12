@@ -220,7 +220,7 @@ def create_label_file(
         main_point_cloud, path_to_label_file, label_list
     )
     planes_list = segment_all_planes_from_point_cloud(
-        current_point_cloud, min_count_of_points, min_area_of_plane, 0.3
+        current_point_cloud, min_count_of_points, min_area_of_plane, 0.06
     )
     main_index_list = []
 
