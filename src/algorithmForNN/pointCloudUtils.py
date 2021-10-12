@@ -82,9 +82,11 @@ def project_point_from_point_cloud_to_2d_plane_point_cloud(
     plane = np.array(plane_model[:3])
     unit_plane = plane / np.linalg.norm(plane, ord=2)
     x = np.array([1, 0, 0])
+    if unit_plane[0] == 1.0 and unit_plane[1] == 0.0 and unit_plane[2] == 0.0:
+        x = np.array([0, 1, 0])
     x = x - np.dot(x, unit_plane) * unit_plane
     x /= sqrt((x ** 2).sum())
-    y = np.cross(unit_plane, x)
+    y = abs(np.cross(unit_plane, x))
     projects_points = []
 
     for point in point_cloud_numpy:
