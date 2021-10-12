@@ -1,2 +1,7 @@
 .ipynb_checkpoints
 plane-segmentation-env
+algorithmForNN-env
+__pycache__
+.idea
+tests-env
+.pytest_cache
