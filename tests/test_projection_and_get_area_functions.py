@@ -60,15 +60,6 @@ def test_get_area_of_projection_of_cube_on_OXY():
 
 def test_get_area_of_projection_of_prisma_on_OXY():
     OXY = [0, 0, 1, 0]
-    cube = np.array(
-        [
-            [0, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [1, 0, 1],
-            [0, 1, 1]
-        ]
-    )
+    cube = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]])
     area_of_square = get_area_of_plane(convert_numpy_array_to_point_cloud(cube), OXY)
     assert area_of_square == 1.0
