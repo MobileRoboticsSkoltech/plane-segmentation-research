@@ -24,39 +24,49 @@ PLANE_LIST = [
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-PATH_TO_DATA_FOLDER",
+        "--path_to_data_folder",
         type=str,
-        help="Enter the path where the folder with .bin files is located",
-        dest="PATH_TO_DATA_FOLDER",
+        help="Enter the path where the folder with .bin files is located.",
+        dest="path_to_data_folder",
         required=True,
     )
     parser.add_argument(
-        "-PATH_TO_LABEL_FOLDER",
+        "--path_to_label_folder",
         type=str,
-        help="Enter the path where the folder with .label files is located",
-        dest="PATH_TO_LABEL_FOLDER",
+        help="Enter the path where the folder with label files is located.",
+        dest="path_to_label_folder",
         required=True,
     )
     parser.add_argument(
-        "-PATH_TO_NEW_LABEL_FOLDER",
+        "--path_to_new_label_folder",
         type=str,
         help="Enter the path to the folder where you want to save the textbooks. The folder will be "
         "created by itself!",
-        dest="PATH_TO_NEW_LABEL_FOLDER",
+        dest="path_to_new_label_folder",
+        required=True,
+    )
+    parser.add_argument(
+        "--minimum_count_of_points_per_plane",
+        type=str,
+        help="The minimum number of points on the plane to segment it.",
+        dest="minimum_count_of_points_per_plane",
+        required=True,
+    )
+    parser.add_argument(
+        "--minimum_area_of_per_plane",
+        type=str,
+        help="The minimum area of a plane to segment it.",
+        dest="minimum_area_of_per_plane",
         required=True,
     )
     args = parser.parse_args()
 
-    PATH_TO_DATA_FOLDER = args.PATH_TO_DATA_FOLDER
-    PATH_TO_LABEL_FOLDER = args.PATH_TO_LABEL_FOLDER
-    PATH_TO_NEW_LABEL_FOLDER = args.PATH_TO_NEW_LABEL_FOLDER
-
     create_all_label_files_by_folder(
-        PATH_TO_DATA_FOLDER,
-        PATH_TO_LABEL_FOLDER,
-        PATH_TO_NEW_LABEL_FOLDER,
+        args.path_to_data_folder,
+        args.path_to_label_folder,
+        args.path_to_new_label_folder,
         PLANE_LIST,
-        MINIMUM_COUNT_OF_POINTS_PER_PLANE,
-        MINIMUM_AREA_OF_PER_PLANE,
+        args.minimum_count_of_points_per_plane,
+        args.minimum_area_of_per_plane,
     )
     print("Success :)")

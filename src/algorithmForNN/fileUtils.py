@@ -23,3 +23,7 @@ def write_ones_to_file_by_index_list(
         list_strings[index] = "1\n"
     with open(path_to_new_label_file, "w") as file:
         file.writelines(list_strings)
+
+
+def get_labels_from_label_format_file(path_to_label_file: str) -> np.ndarray:
+    return np.fromfile(path_to_label_file, dtype=np.uint32).reshape((-1))

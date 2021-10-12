@@ -32,7 +32,7 @@ def select_points_from_point_cloud_by_label_id(
     """
     Function allows you to leave points in the point cloud by label
     """
-    labels = np.fromfile(path_to_label_file, dtype=np.uint32).reshape((-1))
+    labels = get_labels_from_label_format_file(path_to_label_file)
     point_cloud_point_by_id = point_cloud.select_by_index(
         np.where(labels == label_id)[0]
     )
