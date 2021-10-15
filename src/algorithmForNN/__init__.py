@@ -1,1 +1,1 @@
-__all__ = ["fileUtils", "pointCloudUtils"]
+__all__ = ["fileUtils", "pointCloudUtils", "compressUtils"]
