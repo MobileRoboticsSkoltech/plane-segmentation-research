@@ -3,64 +3,42 @@ class FIC:
     def compress(input_list_of_integers: list) -> list:
         result = []
         for number in input_list_of_integers:
+            temp = []
             if number < (1 << 7):
-                result.append(hex(number))
+                temp.append(hex(number))
             elif number < (1 << 14):
-                result.append(hex((number & 0x7F) | 0x80))
-                result.append(hex(number >> 7))
+                temp.append(hex((number & 0x7F) | 0x80))
+                temp.append(hex(number >> 7))
             elif number < (1 << 21):
-                result.append(hex((number & 0x7F) | 0x80))
-                result.append(hex(((number >> 7) & 0x7F) | 0x80))
-                result.append(hex(number >> 14))
+                temp.append(hex((number & 0x7F) | 0x80))
+                temp.append(hex(((number >> 7) & 0x7F) | 0x80))
+                temp.append(hex(number >> 14))
             elif number < (1 << 28):
-                result.append(hex((number & 0x7F) | 0x80))
-                result.append(hex(((number >> 7) & 0x7F) | 0x80))
-                result.append(hex(((number >> 14) & 0x7F) | 0x80))
-                result.append(hex(number >> 21))
+                temp.append(hex((number & 0x7F) | 0x80))
+                temp.append(hex(((number >> 7) & 0x7F) | 0x80))
+                temp.append(hex(((number >> 14) & 0x7F) | 0x80))
+                temp.append(hex(number >> 21))
             else:
-                result.append(hex((number & 0x7F) | 0x80))
-                result.append(hex(((number >> 7) & 0x7F) | 0x80))
-                result.append(hex(((number >> 14) & 0x7F) | 0x80))
-                result.append(hex(((number >> 21) & 0x7F) | 0x80))
-                result.append(hex(number >> 28))
+                temp.append(hex((number & 0x7F) | 0x80))
+                temp.append(hex(((number >> 7) & 0x7F) | 0x80))
+                temp.append(hex(((number >> 14) & 0x7F) | 0x80))
+                temp.append(hex(((number >> 21) & 0x7F) | 0x80))
+                temp.append(hex(number >> 28))
+
+            result.append(temp)
 
         return result
 
     @staticmethod
     def decompress(input_byte_array: list) -> list:
-        size = len(input_byte_array)
-        position = 0
         result = []
 
-        while size > position:
-            byte = int(input_byte_array[position], 16)
-            position += 1
-            temp = byte & 0x7F
-            if byte >= 0:
-                result.append(temp)
-                continue
-            byte = input_byte_array[position]
-            position += 1
-            temp |= (byte & 0x7F) << 7
-            if byte >= 0:
-                print("Hi!")
-                result.append(int(temp, 16))
-                continue
-            byte = input_byte_array[position]
-            position += 1
-            temp |= (byte & 0x7F) << 14
-            if byte >= 0:
-                result.append(temp)
-                continue
-            byte = input_byte_array[position]
-            position += 1
-            temp |= (byte & 0x7F) << 21
-            if byte >= 0:
-                result.append(temp)
-                continue
-            byte = input_byte_array[position]
-            position += 1
-            temp |= byte << 28
+        for item in input_byte_array:
+            temp = 0
+            for index, byte in enumerate(item):
+                byte_int = (int(byte, 16) & 0x7F) << 7 * index
+                temp += byte_int
+
             result.append(temp)
 
         return result
