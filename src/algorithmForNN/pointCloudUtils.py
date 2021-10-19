@@ -207,6 +207,7 @@ def create_label_file(
     path_to_label_file: str,
     label_list: list,
     path_to_new_label_file: str,
+    path_to_new_object_file: str,
     min_count_of_points: int,
     min_area_of_plane: float,
 ):
@@ -230,8 +231,11 @@ def create_label_file(
             main_index_list, current_dict, numpy_plane
         )
 
-    write_ones_to_file_by_index_list(
-        point_cloud_size, main_index_list, path_to_new_label_file
+    generate_labels_and_object_files(
+        point_cloud_size,
+        main_index_list,
+        path_to_new_label_file,
+        path_to_new_object_file,
     )
 
 
@@ -262,7 +266,10 @@ def create_all_label_files_by_folder(
             current_bin_file = path_to_data_folder + file_index + ".bin"
             current_label_file = path_to_label_folder + file_index + ".label"
             current_new_label_file = (
-                path_to_new_label_folder + "/" + file_index + ".txt"
+                path_to_new_label_folder + "/" + file_index + ".pcd.labels"
+            )
+            current_new_object_file = (
+                path_to_new_label_folder + "/" + file_index + ".pcd.objects"
             )
 
             create_label_file(
@@ -270,6 +277,7 @@ def create_all_label_files_by_folder(
                 current_label_file,
                 label_list,
                 current_new_label_file,
+                current_new_object_file,
                 min_count_of_points,
                 min_area_of_plane,
             )
