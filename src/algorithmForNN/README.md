@@ -1,25 +1,21 @@
 ## **What is this?**
 
----
-
 This module is an algorithm for generating semi-labeled clouds so that later they can be used in other tools. 
 
 ## **How do I use this?**
 
----
-
 1. Install the required pip packages 
-   ```
+   ```bash
    $ python -m pip install -r requirements.txt
    ```
 2. Run the algorithm with the required parameters. In order to get help or find out what parameters there are, you can call the help command:
-   ```
+   ```bash
    $ python main.py -h
    ```
 
 Possible parameters: 
 
-```
+```bash
   -h, --help            show this help message and exit
   --path_to_data_folder PATH_TO_DATA_FOLDER
                         Enter the path where the folder with .bin files is
@@ -37,9 +33,19 @@ Possible parameters:
                         The minimum area of a plane to segment it.
 ```
 
-## **What's interesting inside?**
+## **Usage example**
 
----
+```bash
+$ python main.py --path_to_data_folder /home/pavel/dataset/sequences/00/velodyne \ 
+  --path_to_label_folder /home/pavel/dataset/sequences/00/labels \
+  --path_to_new_label_folder home/pavel/result \
+  --minimum_count_of_points_per_plane 1000 \
+  --minimum_area_of_per_plane 0.8
+```
+
+
+
+## **What's interesting inside?**
 
 As you can see, there is a `minimum_area_of_per_plane` parameter. It is not very easy to search for the area of a plane in a 3-dimensional space, as there are some outliers and etc. To solve this problem, two functions were made: 
 
@@ -101,8 +107,6 @@ As you can see, there is a `minimum_area_of_per_plane` parameter. It is not very
   As a answer, we get `1.0.` because by projecting the prism onto the OXY plane, we got an isosceles right-angled triangle. If we approximate it with a rectangle, then we get a square with side 1. 
 
 ## **How does it all work together?**
-
----
 
 Consider a theoretical point cloud with a road that has a curb: 
 
