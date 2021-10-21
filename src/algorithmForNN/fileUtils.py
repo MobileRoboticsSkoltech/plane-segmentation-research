@@ -22,12 +22,10 @@ def generate_labels_and_object_files(
     Function changes those lines in the file, the point with the index of which belongs to any plane
     """
     labels_list = ["["] + ["0,"] * point_cloud_size + ["]"]
-    objects_string = "[]"
     for index in index_list:
-        if index + 1 == point_cloud_size:
-            labels_list[index + 1] = "1"
-        else:
-            labels_list[index + 1] = "1,"
+        labels_list[index + 1] = "1,"
+    labels_list[-2] = labels_list[-2][:-1]
+
     labels_string = ""
     for item in labels_list:
         labels_string += item
@@ -37,7 +35,7 @@ def generate_labels_and_object_files(
     ) as object_file:
 
         compresses_labels_string = FIC.compress(LZW.compress(labels_string))
-        compressed_objects_string = FIC.compress(LZW.compress(objects_string))
+        compressed_objects_string = FIC.compress(LZW.compress("[]"))
         for byte in compresses_labels_string:
             label_file.write(byte)
         for byte in compressed_objects_string:

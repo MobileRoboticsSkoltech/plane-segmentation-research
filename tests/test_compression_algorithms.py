@@ -6,7 +6,7 @@ import pytest
 
 
 def test_compress_decompress_LZW_text_from_file():
-    path_to_file = "tests/data/text.txt"
+    path_to_file = "tests/data/ownData.txt"
     with open(path_to_file, "r") as file:
         start_text = file.read()
         end_text = LZW.decompress(LZW.compress(start_text))
@@ -23,21 +23,26 @@ def test_compress_decompress_FIC_list():
 
 def test_full_compress_decompress_simple_string():
     start_string = "Skoltech is the best"
-    payload = LZW.compress(start_string)
-    payload = FIC.compress(payload)
-
-    data = FIC.decompress(payload)
-    end_string = LZW.decompress(data)
+    end_string = LZW.decompress(
+        FIC.decompress(FIC.compress(LZW.compress(start_string)))
+    )
 
     assert start_string == end_string
 
 
 def test_compress_decompress_text_from_file():
-    path_to_file = "tests/data/text.txt"
-    with open(path_to_file, "r") as file:
-        start_text = file.read()
-        end_text = LZW.decompress(
-            FIC.decompress(FIC.compress(LZW.compress(start_text)))
-        )
+    path_to_correct_file = "tests/data/correct.pcd.labels"
+    path_to_test_file = "tests/data/ownData.txt"
 
-        assert start_text == end_text
+    with open(path_to_test_file, "r") as test_file, open(
+        path_to_correct_file, "rb"
+    ) as correct_file:
+        test_byte_array = FIC.compress(LZW.compress(test_file.read()))
+
+        correct_byte_array = []
+        byte = correct_file.read(1)
+        while byte:
+            correct_byte_array.append(byte)
+            byte = correct_file.read(1)
+
+        assert test_byte_array == correct_byte_array
