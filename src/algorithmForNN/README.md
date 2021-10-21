@@ -25,7 +25,7 @@ Possible parameters:
                         located.
   --path_to_new_label_folder PATH_TO_NEW_LABEL_FOLDER
                         Enter the path to the folder where you want to save
-                        the textbooks. The folder will be created by itself!
+                        the file with new labels.
   --minimum_count_of_points_per_plane MINIMUM_COUNT_OF_POINTS_PER_PLANE
                         The minimum number of points on the plane to segment
                         it.
@@ -43,6 +43,7 @@ $ python main.py --path_to_data_folder /home/pavel/dataset/sequences/00/velodyne
   --minimum_area_of_per_plane 0.8
 ```
 
+In this example, folder `/home/pavel/dataset/sequences/00/labels` contains .label files, which were downloaded from [SemanticKITTI site](http://www.semantic-kitti.org/dataset.html#download). And folder `path_to_new_label_folder` is a new place where new files with labels obtained as a result of the algorithm's work will be.
 
 
 ## **What's interesting inside?**
