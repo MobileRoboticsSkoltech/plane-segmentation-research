@@ -4,7 +4,11 @@ import os
 from math import sqrt, pow
 from scipy.spatial import ConvexHull
 from scipy.ndimage.interpolation import rotate
-from fileUtils import get_point_cloud_from_bin_file, generate_labels_and_object_files, get_labels_from_label_format_file
+from src.algorithmForNN.fileUtils import (
+    get_point_cloud_from_bin_file,
+    generate_labels_and_object_files,
+    get_labels_from_label_format_file,
+)
 
 
 def convert_point_cloud_to_numpy_array(
