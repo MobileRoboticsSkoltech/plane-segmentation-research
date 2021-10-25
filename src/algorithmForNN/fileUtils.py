@@ -1,5 +1,6 @@
 import open3d as o3d
 import numpy as np
+from compressUtils import FIC, LZW
 
 
 def get_point_cloud_from_bin_file(path_to_bin_file: str) -> o3d.geometry.PointCloud:
