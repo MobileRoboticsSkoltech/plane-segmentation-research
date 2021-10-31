@@ -6,7 +6,7 @@ import pytest
 
 
 def test_compress_decompress_LZW_text_from_file():
-    path_to_file = "tests/data/ownData.txt"
+    path_to_file = "tests/data/dataToCompareFileEncodingCompatibility.txt"
     with open(path_to_file, "r") as file:
         start_text = file.read()
         end_text = LZW.decompress(LZW.compress(start_text))
@@ -30,9 +30,9 @@ def test_full_compress_decompress_simple_string():
     assert start_string == end_string
 
 
-def test_compress_decompress_text_from_file():
-    path_to_correct_file = "tests/data/correct.pcd.labels"
-    path_to_test_file = "tests/data/ownData.txt"
+def test_coding_compatibility():
+    path_to_correct_file = "tests/data/dataGeneratedByJSTool.pcd.labels"
+    path_to_test_file = "tests/data/dataToCompareFileEncodingCompatibility.txt"
 
     with open(path_to_test_file, "r") as test_file, open(
         path_to_correct_file, "rb"
