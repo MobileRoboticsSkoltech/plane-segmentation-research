@@ -173,7 +173,7 @@ def get_calibration_matrix_from_calib_file(path_to_calibration_file: str) -> np.
     return calib_matrix
 
 
-def get_position_from_poses_file(
+def get_position_matrix_from_poses_file(
     path_to_poses_file: str, frame_number: int
 ) -> np.ndarray:
     pose_matrix = np.zeros((4, 4))
@@ -199,54 +199,61 @@ def get_position_from_poses_file(
 
 
 def transform_positions_in_point_cloud(
-    calib_matrix: np.ndarray, pose_matrix: np.ndarray, point_claud: np.ndarray
-) -> np.ndarray:
+    calib_matrix: np.ndarray,
+    pose_matrix: np.ndarray,
+    point_cloud: o3d.geometry.PointCloud,
+) -> o3d.geometry.PointCloud:
     left_camera_matrix = np.matmul(pose_matrix, calib_matrix)
 
-    for index, point in enumerate(point_claud):
-        temp_point = np.array([[point[0], point[1], point[2], 1]]).T
-        new_point = np.matmul(left_camera_matrix, temp_point)
-        point_claud[index, 0], point_claud[index, 1], point_claud[index, 2] = (
-            new_point[0, 0],
-            new_point[1, 0],
-            new_point[2, 0],
-        )
+    return point_cloud.transform(left_camera_matrix)
 
-    return point_claud
+
+def merge_two_point_clouds(
+    first_point_cloud: o3d.geometry.PointCloud,
+    second_point_cloud: o3d.geometry.PointCloud,
+) -> o3d.geometry.PointCloud:
+    if len(first_point_cloud.points) == 0:
+        return second_point_cloud
+    elif len(second_point_cloud.points) == 0:
+        return first_point_cloud
+
+    first_point_cloud.points = o3d.utility.Vector3dVector(
+        np.concatenate(
+            (
+                convert_point_cloud_to_numpy_array(first_point_cloud),
+                convert_point_cloud_to_numpy_array(second_point_cloud),
+            )
+        )
+    )
+
+    return first_point_cloud
 
 
 def create_point_cloud_by_first_N_snapshots(
-    path_to_dataset: str, count_of_point_cloud: int
+    path_to_dataset: str,
+    first_number_of_point_cloud: int,
+    last_number_of_point_cloud: int,
 ) -> o3d.geometry.PointCloud:
     path_to_bin_dir = os.path.join(path_to_dataset, "velodyne")
     path_to_poses_file = os.path.join(path_to_dataset, "poses.txt")
     path_to_calib_file = os.path.join(path_to_dataset, "calib.txt")
+
+    point_cloud = o3d.geometry.PointCloud()
     calib_matrix = get_calibration_matrix_from_calib_file(path_to_calib_file)
-    pose_matrix = get_position_from_poses_file(path_to_poses_file, 0)
 
-    main_point_cloud = convert_point_cloud_to_numpy_array(
-        get_point_cloud_from_bin_file(os.path.join(path_to_bin_dir, "000000.bin"))
-    )
-    main_point_cloud = transform_positions_in_point_cloud(
-        calib_matrix, pose_matrix, main_point_cloud
-    )
-
-    for index in range(1, count_of_point_cloud):
-        pose_matrix = get_position_from_poses_file(path_to_poses_file, index)
-        temp_point_cloud = convert_point_cloud_to_numpy_array(
-            get_point_cloud_from_bin_file(
-                os.path.join(
-                    path_to_bin_dir, "0" * (6 - len(str(index))) + str(index) + ".bin"
-                )
-            )
+    for index in range(first_number_of_point_cloud, last_number_of_point_cloud + 1):
+        path_to_current_point_cloud = os.path.join(
+            path_to_bin_dir, "0" * (6 - len(str(index))) + str(index) + ".bin"
         )
+        temp_point_cloud = get_point_cloud_from_bin_file(path_to_current_point_cloud)
+        pose_matrix = get_position_matrix_from_poses_file(path_to_poses_file, index)
         temp_point_cloud = transform_positions_in_point_cloud(
             calib_matrix, pose_matrix, temp_point_cloud
         )
 
-        main_point_cloud = np.concatenate((main_point_cloud, temp_point_cloud))
+        point_cloud = merge_two_point_clouds(point_cloud, temp_point_cloud)
 
-    return convert_numpy_array_to_point_cloud(main_point_cloud)
+    return point_cloud
 
 
 def segment_all_planes_from_point_cloud(
