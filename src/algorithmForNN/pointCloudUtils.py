@@ -156,6 +156,39 @@ def get_area_of_plane(points: o3d.geometry.PointCloud, plane_model: list) -> flo
     return current_list[1] * current_list[2]
 
 
+def get_matrix_from_kitti_file(line: str) -> np.ndarray:
+    matrix = np.eye(4)
+    matrix[:3, :4] = np.array(list(map(float, line.rstrip().split(" ")))).reshape(3, 4)
+
+    return matrix
+
+
+def get_calibration_matrix_from_calib_file(path_to_calibration_file: str) -> np.ndarray:
+    with open(path_to_calibration_file) as file:
+        return get_matrix_from_kitti_file(file.readlines()[4][4:])
+
+
+def get_position_matrices_from_poses_file(path_to_poses_file: str) -> list:
+    with open(path_to_poses_file) as file:
+        lines = file.readlines()
+        pose_matrices = []
+
+        for frame_number in range(len(lines)):
+            pose_matrices.append(get_matrix_from_kitti_file(lines[frame_number]))
+
+        return pose_matrices
+
+
+def transform_positions_in_point_cloud(
+    calib_matrix: np.ndarray,
+    pose_matrix: np.ndarray,
+    point_cloud: o3d.geometry.PointCloud,
+) -> o3d.geometry.PointCloud:
+    left_camera_matrix = pose_matrix @ calib_matrix
+
+    return point_cloud.transform(left_camera_matrix)
+
+
 def segment_all_planes_from_point_cloud(
     point_cloud: o3d.geometry.PointCloud,
     min_count_of_points: int,
