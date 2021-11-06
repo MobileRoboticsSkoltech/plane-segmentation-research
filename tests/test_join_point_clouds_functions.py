@@ -1,6 +1,6 @@
 from src.algorithmForNN.pointCloudUtils import (
     get_calibration_matrix_from_calib_file,
-    get_position_matrix_from_poses_file,
+    get_position_matrices_from_poses_file,
     convert_point_cloud_to_numpy_array,
     merge_two_point_clouds,
 )
@@ -33,7 +33,7 @@ def test_get_calibration_matrix_from_file():
 def test_get_poses_line_from_file():
     path_to_poses_file = "tests/data/poses_test_file.txt"
     frame_number = 0
-    correct_matrix = np.array(
+    correct_first_matrix = np.array(
         [
             [1.00000e00, 9.31323e-10, -3.27418e-11, 0.00000e00],
             [-9.31323e-10, 1.00000e00, -4.65661e-10, 7.45058e-09],
@@ -41,10 +41,26 @@ def test_get_poses_line_from_file():
             [0.00000e00, 0.00000e00, 0.00000e00, 1.00000e00],
         ]
     )
+    correct_second_matrix = np.array(
+        [
+            [0.999991, -0.00316351, -0.00274942, -0.00135393],
+            [0.00316045, 0.999994, -0.00111659, -0.0248245],
+            [0.00275294, 0.00110789, 0.999996, 0.672716],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+    function_list_of_matrices = get_position_matrices_from_poses_file(
+        path_to_poses_file
+    )
 
     np.testing.assert_array_almost_equal(
-        correct_matrix,
-        get_position_matrix_from_poses_file(path_to_poses_file, frame_number),
+        correct_first_matrix,
+        function_list_of_matrices[0],
+    )
+    np.testing.assert_array_almost_equal(
+        correct_second_matrix,
+        function_list_of_matrices[1],
     )
 
 
