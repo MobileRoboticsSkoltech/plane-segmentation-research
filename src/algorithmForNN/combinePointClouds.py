@@ -2,7 +2,6 @@ from src.algorithmForNN.pointCloudUtils import (
     get_calibration_matrix_from_calib_file,
     get_position_matrices_from_poses_file,
     transform_positions_in_point_cloud,
-    merge_two_point_clouds,
 )
 
 
@@ -28,6 +27,6 @@ def create_point_cloud_by_first_N_snapshots(
             calib_matrix, poses_matrices[index], temp_point_cloud
         )
 
-        point_cloud = merge_two_point_clouds(point_cloud, temp_point_cloud)
+        point_cloud = point_cloud + temp_point_cloud
 
     return point_cloud

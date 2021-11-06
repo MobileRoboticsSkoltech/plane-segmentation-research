@@ -2,7 +2,6 @@ from src.algorithmForNN.pointCloudUtils import (
     get_calibration_matrix_from_calib_file,
     get_position_matrices_from_poses_file,
     convert_point_cloud_to_numpy_array,
-    merge_two_point_clouds,
 )
 from src.algorithmForNN.fileUtils import (
     get_point_cloud_from_bin_file,
@@ -61,17 +60,4 @@ def test_get_poses_line_from_file():
     np.testing.assert_array_almost_equal(
         correct_second_matrix,
         function_list_of_matrices[1],
-    )
-
-
-def test_merge_two_point_clouds():
-    path_to_point_cloud = "tests/data/point_cloud_test.bin"
-    first_point_cloud = get_point_cloud_from_bin_file(path_to_point_cloud)
-    second_point_cloud = o3d.geometry.PointCloud()
-
-    result_point_cloud = merge_two_point_clouds(first_point_cloud, second_point_cloud)
-
-    np.testing.assert_array_almost_equal(
-        convert_point_cloud_to_numpy_array(first_point_cloud),
-        convert_point_cloud_to_numpy_array(result_point_cloud),
     )
