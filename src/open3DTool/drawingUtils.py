@@ -1,10 +1,7 @@
+from planeUtils import get_distance_to_all_points, get_plane_equation
+
 import open3d as o3d
 import numpy as np
-
-
-def draw_point_cloud(point_cloud: o3d.geometry.PointCloud):
-    point_cloud.paint_uniform_color([0.51, 0.51, 0.51])
-    o3d.visualization.draw_geometries_with_editing([point_cloud])
 
 
 def pick_points(main_point_cloud: o3d.geometry.PointCloud) -> list:
@@ -29,3 +26,6 @@ def draw_and_pick_points_function(point_cloud: o3d.geometry.PointCloud):
             point_cloud.select_by_index(picked_points_list, invert=True)
             + three_picked_points
         )
+
+        plane = get_plane_equation(three_picked_points)
+        print(get_distance_to_all_points(point_cloud, plane))
