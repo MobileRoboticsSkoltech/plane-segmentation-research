@@ -1,4 +1,4 @@
-name: algorithmForNNCI
+name: Unit tests
 on: push
 
 jobs:
