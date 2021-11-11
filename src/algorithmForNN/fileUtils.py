@@ -22,8 +22,8 @@ def generate_labels_and_object_files(
     """
     Function changes those lines in the file, the point with the index of which belongs to any plane
     """
-    labels_list = [0] * point_cloud_size
-    labels_list[np.array(index_list) + 1] = 1
+    labels_list = np.array([0] * point_cloud_size)
+    labels_list[np.array(index_list)] = 1
 
     labels_string = "[" + ",".join([str(label) for label in labels_list]) + "]"
 

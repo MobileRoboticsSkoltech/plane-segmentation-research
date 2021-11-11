@@ -28,15 +28,15 @@ def get_distance_to_all_points(
 
 def get_indexes_of_points_on_plane(
     distances: np.ndarray, plane_distance: np.float64
-) -> list:
-    return np.where(distances <= plane_distance)[0].tolist()
+) -> np.ndarray:
+    return np.where(distances <= plane_distance)[0]
 
 
 def add_new_points(
     point_cloud: o3d.geometry.PointCloud,
     picked_points_indexes: list,
     distance: np.float64,
-) -> o3d.geometry.PointCloud:
+) -> (o3d.geometry.PointCloud, list):
     three_picked_points = point_cloud.select_by_index(picked_points_indexes)
     indexes_list = get_indexes_of_points_on_plane(
         get_distance_to_all_points(
@@ -48,4 +48,7 @@ def add_new_points(
     picked_cloud = point_cloud.select_by_index(indexes_list)
     picked_cloud.paint_uniform_color([1.0, 0, 0])
 
-    return point_cloud.select_by_index(indexes_list, invert=True) + picked_cloud
+    return (
+        point_cloud.select_by_index(indexes_list, invert=True) + picked_cloud,
+        indexes_list,
+    )
