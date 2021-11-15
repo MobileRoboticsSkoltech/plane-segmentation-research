@@ -32,10 +32,10 @@ def generate_labels_and_object_files(
         path_to_new_object_file, "wb"
     ) as object_file:
 
-        compresses_labels_string = FIC.compress(LZW.compress(labels_string))
+        compressed_labels_string = FIC.compress(LZW.compress(labels_string))
         compressed_objects_string = FIC.compress(LZW.compress("[]"))
 
-        label_file.write(b"".join(compresses_labels_string))
+        label_file.write(b"".join(compressed_labels_string))
         object_file.write(b"".join(compressed_objects_string))
 
 

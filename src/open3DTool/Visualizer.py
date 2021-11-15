@@ -3,12 +3,14 @@ from src.algorithmForNN.fileUtils import (
     get_point_cloud_from_bin_file,
     generate_labels_and_object_files,
 )
+from src.open3DTool.fileUtils import update_label_files
 import numpy as np
 import open3d as o3d
 
 
 class Visualizer:
     point_cloud = o3d.geometry.PointCloud()
+    path_to_pcd_file = ""
     path_to_label_file = ""
     path_to_object_file = ""
     main_visualizer = o3d.visualization.VisualizerWithKeyCallback()
@@ -25,17 +27,30 @@ class Visualizer:
     ):
         self.point_cloud = get_point_cloud_from_bin_file(path_to_bin_file)
         self.point_cloud.paint_uniform_color([0.51, 0.51, 0.51])
+        self.path_to_pcd_file = path_to_bin_file[:-4] + ".pcd"
         self.path_to_label_file = path_to_save_file_label
         self.path_to_object_file = path_to_save_file_object
         self.distance = distance
-        self.update_label_files([])
+        self.generate_label_files([])
 
-    def update_label_files(self, indexes: list):
+    def generate_label_files(self, indexes: list):
         generate_labels_and_object_files(
             len(self.point_cloud.points),
             indexes,
             self.path_to_label_file,
             self.path_to_object_file,
+        )
+
+    def update_pcd_and_label_files(
+        self, count_of_points: int, is_append_right: bool = True
+    ):
+        update_label_files(
+            self.point_cloud,
+            count_of_points,
+            self.path_to_pcd_file,
+            self.path_to_label_file,
+            self.path_to_object_file,
+            is_append_right,
         )
 
     def run(self):
@@ -88,6 +103,7 @@ class Visualizer:
         self.point_cloud = picked_cloud + self.point_cloud.select_by_index(
             last_indexes, invert=True
         )
+        self.update_pcd_and_label_files(number_of_last_indexes, False)
         self.run()
 
     def update_main_window_by_three_points(self, picked_points: list):
@@ -95,4 +111,5 @@ class Visualizer:
             self.point_cloud, picked_points, self.distance
         )
         self.picked_indexes.append(len(temp_indexes))
+        self.update_pcd_and_label_files(len(temp_indexes), True)
         self.run()
