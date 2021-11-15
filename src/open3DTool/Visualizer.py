@@ -65,22 +65,28 @@ class Visualizer:
 
     def pick_points(self, visualizer):
         self.main_visualizer.close()
+        self.main_visualizer.destroy_window()
         indexes_of_three_points = self.pick_points_utils()
         assert len(indexes_of_three_points) == 3
         self.update_main_window_by_three_points(indexes_of_three_points)
 
     def get_previous_snapshot(self, visualizer):
-        self.main_visualizer.close()
         if len(self.picked_indexes) == 0:
             return
+        self.main_visualizer.close()
+        self.main_visualizer.destroy_window()
 
-        last_indexes = self.picked_indexes[-1]
+        number_of_last_indexes = self.picked_indexes[-1]
         self.picked_indexes = self.picked_indexes[:-1]
+        point_cloud_len = len(self.point_cloud.points)
+        last_indexes = [
+            i for i in range(point_cloud_len - number_of_last_indexes, point_cloud_len)
+        ]
         picked_cloud = self.point_cloud.select_by_index(last_indexes)
         picked_cloud.paint_uniform_color([0.51, 0.51, 0.51])
 
-        self.point_cloud = (
-            self.point_cloud.select_by_index(last_indexes, invert=True) + picked_cloud
+        self.point_cloud = picked_cloud + self.point_cloud.select_by_index(
+            last_indexes, invert=True
         )
         self.run()
 
@@ -88,5 +94,5 @@ class Visualizer:
         self.point_cloud, temp_indexes = add_new_points(
             self.point_cloud, picked_points, self.distance
         )
-        self.picked_indexes.append(temp_indexes)
+        self.picked_indexes.append(len(temp_indexes))
         self.run()
