@@ -22,11 +22,12 @@ class Visualizer:
         path_to_bin_file: str,
         path_to_save_file_label: str,
         path_to_save_file_object: str,
+        path_to_pcd_file: str,
         distance: int,
     ):
         self.point_cloud = get_point_cloud_from_bin_file(path_to_bin_file)
         self.point_cloud.paint_uniform_color([0.51, 0.51, 0.51])
-        self.path_to_pcd_file = path_to_bin_file[:-4] + ".pcd"
+        self.path_to_pcd_file = path_to_pcd_file
         self.path_to_label_file = path_to_save_file_label
         self.path_to_object_file = path_to_save_file_object
         self.distance = distance
@@ -78,8 +79,6 @@ class Visualizer:
         return picked_visualizer.get_picked_points()
 
     def pick_points(self, visualizer):
-        self.main_visualizer.close()
-        self.main_visualizer.destroy_window()
         indexes_of_three_points = self.pick_points_utils()
         assert len(indexes_of_three_points) == 3
         self.update_main_window_by_three_points(indexes_of_three_points)
@@ -106,9 +105,9 @@ class Visualizer:
         visualizer.add_geometry(self.point_cloud)
 
     def update_main_window_by_three_points(self, picked_points: list):
-        self.point_cloud, temp_indexes = add_new_points(
+        self.point_cloud, indexes = add_new_points(
             self.point_cloud, picked_points, self.distance
         )
-        self.picked_indexes.append(len(temp_indexes))
-        self.update_pcd_and_label_files(len(temp_indexes), True)
+        self.picked_indexes.append(len(indexes))
+        self.update_pcd_and_label_files(len(indexes), True)
         self.run()
