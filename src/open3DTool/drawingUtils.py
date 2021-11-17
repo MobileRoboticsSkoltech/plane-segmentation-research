@@ -1,4 +1,3 @@
-from src.open3DTool.planeUtils import add_new_points
 from src.open3DTool.Visualizer import Visualizer
 
 import open3d as o3d

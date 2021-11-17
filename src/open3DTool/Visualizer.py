@@ -14,7 +14,6 @@ class Visualizer:
     path_to_label_file = ""
     path_to_object_file = ""
     main_visualizer = o3d.visualization.VisualizerWithKeyCallback()
-    picked_visualizer = o3d.visualization.VisualizerWithEditing()
     picked_indexes = []
     distance = 0
 
@@ -68,15 +67,15 @@ class Visualizer:
         self.main_visualizer.register_key_callback(32, self.pick_points)  # Space
         self.main_visualizer.register_key_callback(
             259, self.get_previous_snapshot
-        )  # Tab
+        )  # Backspace
 
     def pick_points_utils(self):
-        self.picked_visualizer = o3d.visualization.VisualizerWithEditing()
-        self.picked_visualizer.create_window()
-        self.picked_visualizer.add_geometry(self.point_cloud)
-        self.picked_visualizer.run()
-        self.picked_visualizer.destroy_window()
-        return self.picked_visualizer.get_picked_points()
+        picked_visualizer = o3d.visualization.VisualizerWithEditing()
+        picked_visualizer.create_window()
+        picked_visualizer.add_geometry(self.point_cloud)
+        picked_visualizer.run()
+        picked_visualizer.destroy_window()
+        return picked_visualizer.get_picked_points()
 
     def pick_points(self, visualizer):
         self.main_visualizer.close()
@@ -88,8 +87,6 @@ class Visualizer:
     def get_previous_snapshot(self, visualizer):
         if len(self.picked_indexes) == 0:
             return
-        self.main_visualizer.close()
-        self.main_visualizer.destroy_window()
 
         number_of_last_indexes = self.picked_indexes[-1]
         self.picked_indexes = self.picked_indexes[:-1]
@@ -104,7 +101,9 @@ class Visualizer:
             last_indexes, invert=True
         )
         self.update_pcd_and_label_files(number_of_last_indexes, False)
-        self.run()
+
+        visualizer.clear_geometries()
+        visualizer.add_geometry(self.point_cloud)
 
     def update_main_window_by_three_points(self, picked_points: list):
         self.point_cloud, temp_indexes = add_new_points(
