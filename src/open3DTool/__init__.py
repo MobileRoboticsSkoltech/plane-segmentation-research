@@ -1,1 +1,1 @@
-__all__ = ["drawingUtils", "planeUtils"]
+__all__ = ["drawingUtils", "planeUtils", "fileUtils"]

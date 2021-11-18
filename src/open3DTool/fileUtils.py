@@ -7,7 +7,7 @@ def update_label_files(
     count_of_points: int,
     path_to_pcd_file: str,
     path_to_label_file: str,
-    path_to_object_file: str,  # may be added in the future
+    path_to_object_file: str,  # may be add in future
     is_append_right: bool,
 ):
     with open(path_to_label_file, "rb") as label_file:

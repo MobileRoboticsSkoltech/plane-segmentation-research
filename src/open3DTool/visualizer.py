@@ -1,4 +1,4 @@
-from src.open3DTool.planeUtils import add_new_points
+from src.open3DTool.planeUtils import add_new_points, pick_points_utils
 from src.algorithmForNN.fileUtils import (
     get_point_cloud_from_bin_file,
     generate_labels_and_object_files,
@@ -41,9 +41,7 @@ class Visualizer:
             self.path_to_object_file,
         )
 
-    def update_pcd_and_label_files(
-        self, count_of_points: int, is_append_right: bool = True
-    ):
+    def update_pcd_and_label_files(self, count_of_points: int, is_append_right: bool):
         update_label_files(
             self.point_cloud,
             count_of_points,
@@ -61,26 +59,16 @@ class Visualizer:
         self.main_visualizer.run()
         self.main_visualizer.destroy_window()
 
-    def get_picked_points(self):
-        return self.picked_index
-
     def set_hotkeys(self):
         self.main_visualizer.register_key_callback(32, self.pick_points)  # Space
         self.main_visualizer.register_key_callback(
             259, self.get_previous_snapshot
         )  # Backspace
 
-    def pick_points_utils(self):
-        picked_visualizer = o3d.visualization.VisualizerWithEditing()
-        picked_visualizer.create_window()
-        picked_visualizer.add_geometry(self.point_cloud)
-        picked_visualizer.run()
-        picked_visualizer.destroy_window()
-        return picked_visualizer.get_picked_points()
-
     def pick_points(self, visualizer):
-        indexes_of_three_points = self.pick_points_utils()
+        indexes_of_three_points = pick_points_utils(self.point_cloud)
         assert len(indexes_of_three_points) == 3
+
         self.update_main_window_by_three_points(indexes_of_three_points)
 
     def get_previous_snapshot(self, visualizer):
@@ -108,6 +96,8 @@ class Visualizer:
         self.point_cloud, indexes = add_new_points(
             self.point_cloud, picked_points, self.distance
         )
+
         self.picked_indexes.append(len(indexes))
         self.update_pcd_and_label_files(len(indexes), True)
+
         self.run()

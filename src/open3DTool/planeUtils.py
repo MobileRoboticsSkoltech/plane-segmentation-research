@@ -2,6 +2,15 @@ import open3d as o3d
 import numpy as np
 
 
+def pick_points_utils(point_cloud: o3d.geometry.PointCloud):
+    picked_visualizer = o3d.visualization.VisualizerWithEditing()
+    picked_visualizer.create_window()
+    picked_visualizer.add_geometry(point_cloud)
+    picked_visualizer.run()
+    picked_visualizer.destroy_window()
+    return picked_visualizer.get_picked_points()
+
+
 def get_plane_equation(three_points: o3d.geometry.PointCloud) -> list:
     first_point, second_point, third_point = np.asarray(three_points.points)
     vector_one = third_point - first_point
