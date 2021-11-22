@@ -16,6 +16,7 @@ class Visualizer:
     main_visualizer = o3d.visualization.VisualizerWithKeyCallback()
     picked_indexes = []
     distance = 0
+    pick_points_count = 3
 
     def __init__(
         self,
@@ -23,7 +24,8 @@ class Visualizer:
         path_to_save_file_label: str,
         path_to_save_file_object: str,
         path_to_pcd_file: str,
-        distance: int,
+        distance: np.intc,
+        pick_points_count: np.intc,
     ):
         self.point_cloud = get_point_cloud_from_bin_file(path_to_bin_file)
         self.point_cloud.paint_uniform_color([0.51, 0.51, 0.51])
@@ -31,6 +33,7 @@ class Visualizer:
         self.path_to_label_file = path_to_save_file_label
         self.path_to_object_file = path_to_save_file_object
         self.distance = distance
+        self.pick_points_count = pick_points_count
         self.generate_label_files([])
 
     def generate_label_files(self, indexes: list):
@@ -66,10 +69,10 @@ class Visualizer:
         )  # Backspace
 
     def pick_points(self, visualizer):
-        indexes_of_three_points = pick_points_utils(self.point_cloud)
-        assert len(indexes_of_three_points) == 3
+        indexes_of_points = pick_points_utils(self.point_cloud)
+        assert len(indexes_of_points) == self.pick_points_count
 
-        self.update_main_window_by_three_points(indexes_of_three_points)
+        self.update_main_window_by_plane(indexes_of_points)
 
     def get_previous_snapshot(self, visualizer):
         if len(self.picked_indexes) == 0:
@@ -92,7 +95,7 @@ class Visualizer:
         visualizer.clear_geometries()
         visualizer.add_geometry(self.point_cloud)
 
-    def update_main_window_by_three_points(self, picked_points: list):
+    def update_main_window_by_plane(self, picked_points: list):
         self.point_cloud, indexes = add_new_points(
             self.point_cloud, picked_points, self.distance
         )

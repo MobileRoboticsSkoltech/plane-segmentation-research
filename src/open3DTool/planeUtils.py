@@ -1,3 +1,4 @@
+from itertools import combinations
 import open3d as o3d
 import numpy as np
 
@@ -22,13 +23,17 @@ def get_plane_equation(three_points: o3d.geometry.PointCloud) -> list:
     return [a, b, c, d]
 
 
+def get_main_plane_equation(planes: np.ndarray) -> np.ndarray:
+    return np.average(planes, axis=0)
+
+
 def get_distance_to_all_points(
-    point_cloud: o3d.geometry.PointCloud, plane: list
+    point_cloud: o3d.geometry.PointCloud, plane: np.ndarray
 ) -> np.ndarray:
     numpy_point_cloud = np.asarray(point_cloud.points)
     ones_array = np.ones((numpy_point_cloud.shape[0], 1), dtype=np.float64)
     numpy_point_cloud = np.append(numpy_point_cloud, ones_array, axis=1)
-    plane = np.array(plane).T
+    plane = plane.T
 
     distances = np.abs(numpy_point_cloud @ plane) / np.linalg.norm(plane)
 
@@ -46,11 +51,19 @@ def add_new_points(
     picked_points_indexes: list,
     distance: np.float64,
 ) -> (o3d.geometry.PointCloud, list):
-    three_picked_points = point_cloud.select_by_index(picked_points_indexes)
+    planes_array = np.empty((0, 4), np.float64)
+
+    for combination in combinations(picked_points_indexes, 3):
+        current_combination = list(combination)
+        current_plane = get_plane_equation(
+            point_cloud.select_by_index(current_combination)
+        )
+        planes_array = np.append(planes_array, np.array([current_plane]), axis=0)
+
+    plane_equation = get_main_plane_equation(planes_array)
+
     indexes_list = get_indexes_of_points_on_plane(
-        get_distance_to_all_points(
-            point_cloud, get_plane_equation(three_picked_points)
-        ),
+        get_distance_to_all_points(point_cloud, plane_equation),
         distance,
     )
 

@@ -2,6 +2,7 @@ from src.open3DTool.planeUtils import (
     get_plane_equation,
     get_distance_to_all_points,
     get_indexes_of_points_on_plane,
+    get_main_plane_equation,
 )
 
 import numpy as np
@@ -58,7 +59,7 @@ def test_get_distance_to_all_points():
 
     np.testing.assert_array_equal(
         np.array([3, 6, 9, 0, 0, 0]),
-        get_distance_to_all_points(point_cloud, get_plane_equation(picked_points)),
+        get_distance_to_all_points(point_cloud, np.array(get_plane_equation(picked_points))),
     )
 
 
@@ -78,4 +79,14 @@ def test_get_indexes_of_points_on_plane():
     np.testing.assert_array_equal(
         np.array([0, 3, 4, 5]),
         get_indexes_of_points_on_plane(np.array([3, 6, 9, 0, 0, 0]), distance),
+    )
+
+
+def test_get_main_plane_equation():
+    planes_array = np.array(
+        [[1, 2, 3, 4], [1, 2, 3, 5], [1, 2, 4, 5], [1, 3, 4, 5], [2, 3, 4, 5]]
+    )
+
+    np.testing.assert_array_equal(
+        np.array([1.2, 2.4, 3.6, 4.8]), get_main_plane_equation(planes_array)
     )

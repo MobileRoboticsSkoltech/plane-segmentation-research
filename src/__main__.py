@@ -40,6 +40,13 @@ def main():
         dest="distance_to_plane",
         required=True,
     )
+    parser.add_argument(
+        "--count_points_to_pick",
+        type=np.intc,
+        help="Enter the number of points you will select each time you segment the plane",
+        dest="count_points_to_pick",
+        required=True,
+    )
     args = parser.parse_args()
     draw_and_pick_points_function(
         args.path_to_bin_file,
@@ -47,6 +54,7 @@ def main():
         args.path_to_save_object_file,
         args.path_to_pcd_file,
         args.distance_to_plane,
+        args.count_points_to_pick,
     )
 
 
