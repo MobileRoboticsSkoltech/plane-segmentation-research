@@ -59,7 +59,9 @@ def test_get_distance_to_all_points():
 
     np.testing.assert_array_equal(
         np.array([3, 6, 9, 0, 0, 0]),
-        get_distance_to_all_points(point_cloud, np.array(get_plane_equation(picked_points))),
+        get_distance_to_all_points(
+            point_cloud, np.array(get_plane_equation(picked_points))
+        ),
     )
 
 
