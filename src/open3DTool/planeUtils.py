@@ -1,4 +1,7 @@
-from itertools import combinations
+from src.algorithmForNN.pointCloudUtils import (
+    convert_point_cloud_to_numpy_array,
+)
+
 import open3d as o3d
 import numpy as np
 
@@ -10,21 +13,6 @@ def pick_points_utils(point_cloud: o3d.geometry.PointCloud):
     picked_visualizer.run()
     picked_visualizer.destroy_window()
     return picked_visualizer.get_picked_points()
-
-
-def get_plane_equation(three_points: o3d.geometry.PointCloud) -> list:
-    first_point, second_point, third_point = np.asarray(three_points.points)
-    vector_one = third_point - first_point
-    vector_two = second_point - first_point
-    cp = np.cross(vector_one, vector_two)
-    a, b, c = cp
-    d = -np.dot(cp, third_point)
-
-    return [a, b, c, d]
-
-
-def get_main_plane_equation(planes: np.ndarray) -> np.ndarray:
-    return np.average(planes, axis=0)
 
 
 def get_distance_to_all_points(
@@ -46,21 +34,23 @@ def get_indexes_of_points_on_plane(
     return np.where(distances <= plane_distance)[0]
 
 
+def get_plane_using_SVD(points: np.ndarray) -> np.ndarray:
+    centroid = points.mean(axis=0)
+    points_temp = points - centroid
+    _, _, V_T = np.linalg.svd(points_temp)
+    normal_vector = V_T[2]
+    normal_vector = np.append(normal_vector, -np.dot(normal_vector, points[0]))
+
+    return normal_vector / np.linalg.norm(normal_vector)
+
+
 def add_new_points(
     point_cloud: o3d.geometry.PointCloud,
     picked_points_indexes: list,
     distance: np.float64,
 ) -> (o3d.geometry.PointCloud, list):
-    planes_array = np.empty((0, 4), np.float64)
-
-    for combination in combinations(picked_points_indexes, 3):
-        current_combination = list(combination)
-        current_plane = get_plane_equation(
-            point_cloud.select_by_index(current_combination)
-        )
-        planes_array = np.append(planes_array, np.array([current_plane]), axis=0)
-
-    plane_equation = get_main_plane_equation(planes_array)
+    points = point_cloud.select_by_index(picked_points_indexes)
+    plane_equation = get_plane_using_SVD(convert_point_cloud_to_numpy_array(points))
 
     indexes_list = get_indexes_of_points_on_plane(
         get_distance_to_all_points(point_cloud, plane_equation),
