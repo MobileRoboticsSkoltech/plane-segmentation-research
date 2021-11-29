@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from src.open3DTool.drawingUtils import draw_and_pick_points_function
+from src.open3DTool.visualizer import Visualizer
 
 
 def main():
@@ -48,7 +48,8 @@ def main():
         required=True,
     )
     args = parser.parse_args()
-    draw_and_pick_points_function(
+
+    visualizer = Visualizer(
         args.path_to_bin_file,
         args.path_to_save_label_file,
         args.path_to_save_object_file,
@@ -56,6 +57,7 @@ def main():
         args.distance_to_plane,
         args.count_points_to_pick,
     )
+    visualizer.run()
 
 
 if __name__ == "__main__":

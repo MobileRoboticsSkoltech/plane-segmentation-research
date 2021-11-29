@@ -1,4 +1,7 @@
-from src.open3DTool.planeUtils import add_new_points, pick_points_utils
+from src.open3DTool.planeUtils import (
+    segment_points_on_plane_by_picked_points,
+    pick_points_utils,
+)
 from src.algorithmForNN.fileUtils import (
     get_point_cloud_from_bin_file,
     generate_labels_and_object_files,
@@ -96,7 +99,7 @@ class Visualizer:
         visualizer.add_geometry(self.point_cloud)
 
     def update_main_window_by_plane(self, picked_points: list):
-        self.point_cloud, indexes = add_new_points(
+        self.point_cloud, indexes = segment_points_on_plane_by_picked_points(
             self.point_cloud, picked_points, self.distance
         )
 

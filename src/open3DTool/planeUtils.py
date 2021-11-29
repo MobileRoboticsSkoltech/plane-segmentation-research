@@ -23,7 +23,7 @@ def get_distance_to_all_points(
     numpy_point_cloud = np.append(numpy_point_cloud, ones_array, axis=1)
     plane = plane.T
 
-    distances = np.abs(numpy_point_cloud @ plane) / np.linalg.norm(plane)
+    distances = np.abs(numpy_point_cloud @ plane) / np.linalg.norm(plane[:-1])
 
     return distances
 
@@ -41,10 +41,10 @@ def get_plane_using_SVD(points: np.ndarray) -> np.ndarray:
     normal_vector = V_T[2]
     normal_vector = np.append(normal_vector, -np.dot(normal_vector, points[0]))
 
-    return normal_vector / np.linalg.norm(normal_vector)
+    return normal_vector / np.linalg.norm(normal_vector[:-1])
 
 
-def add_new_points(
+def segment_points_on_plane_by_picked_points(
     point_cloud: o3d.geometry.PointCloud,
     picked_points_indexes: list,
     distance: np.float64,
