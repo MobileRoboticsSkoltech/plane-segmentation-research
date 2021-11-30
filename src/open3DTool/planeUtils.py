@@ -39,7 +39,7 @@ def get_plane_using_SVD(points: np.ndarray) -> np.ndarray:
     points_temp = points - centroid
     _, _, V_T = np.linalg.svd(points_temp)
     normal_vector = V_T[2]
-    normal_vector = np.append(normal_vector, -np.dot(normal_vector, points[0]))
+    normal_vector = np.append(normal_vector, -np.dot(normal_vector, centroid))
 
     return normal_vector / np.linalg.norm(normal_vector[:-1])
 

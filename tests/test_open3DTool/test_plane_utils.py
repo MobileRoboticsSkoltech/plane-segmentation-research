@@ -40,7 +40,7 @@ def test_get_plane_with_one_noise_point():
     point_cloud = np.array([[1, 2, 0], [3, 4, 0], [5, 7, 0], [100, 100, 1]])
 
     np.testing.assert_array_almost_equal(
-        np.array([-0.03993332, 0.03005271, 0.9987503, -0.02017209]),
+        np.array([-0.039933, 0.030053, 0.99875, -0.010493]),
         get_plane_using_SVD(point_cloud),
         6,
     )
@@ -124,7 +124,7 @@ def test_get_plane_by_5_points():
     )
 
     np.testing.assert_array_almost_equal(
-        np.array([-0.28063858, 0.95904881, 0.03830621, -1.63745904]),
+        np.array([-0.280639, 0.959049, 0.038306, -3.005047]),
         get_plane_using_SVD(point_cloud),
         6,
     )
@@ -152,7 +152,7 @@ def test_get_indexes_of_segmented_points():
     second_point_cloud_o3d = convert_numpy_array_to_point_cloud(other_point_cloud)
     main_point_cloud = first_point_cloud_o3d + second_point_cloud_o3d
     np.testing.assert_array_equal(
-        np.array([0, 4, 5]),
+        np.array([1, 3]),
         get_indexes_of_points_on_plane(
             get_distance_to_all_points(
                 main_point_cloud, get_plane_using_SVD(plane_point_cloud)
