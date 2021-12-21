@@ -1,9 +1,9 @@
-from src.algorithmForNN.pointCloudUtils import (
+from src.algorithmsForPointCloud.pointCloudUtils import (
     get_calibration_matrix_from_calib_file,
     get_position_matrices_from_poses_file,
     convert_point_cloud_to_numpy_array,
 )
-from src.algorithmForNN.fileUtils import (
+from src.algorithmsForPointCloud.fileUtils import (
     get_point_cloud_from_bin_file,
 )
 

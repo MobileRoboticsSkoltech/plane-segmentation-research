@@ -1,4 +1,4 @@
-from src.algorithmForNN.pointCloudUtils import (
+from src.algorithmsForPointCloud.pointCloudUtils import (
     convert_point_cloud_to_numpy_array,
 )
 

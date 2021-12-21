@@ -1,4 +1,4 @@
-from src.algorithmForNN.pointCloudUtils import (
+from src.algorithmsForPointCloud.pointCloudUtils import (
     project_point_from_point_cloud_to_2d_plane_point_cloud,
     convert_numpy_array_to_point_cloud,
     get_area_of_plane,

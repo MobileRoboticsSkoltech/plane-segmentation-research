@@ -4,7 +4,7 @@ import os
 from math import sqrt, pow
 from scipy.spatial import ConvexHull
 from scipy.ndimage.interpolation import rotate
-from src.algorithmForNN.fileUtils import (
+from src.algorithmsForPointCloud.fileUtils import (
     get_point_cloud_from_bin_file,
     generate_labels_and_object_files,
     get_labels_from_label_format_file,

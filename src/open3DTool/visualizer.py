@@ -2,7 +2,7 @@ from src.open3DTool.planeUtils import (
     segment_points_on_plane_by_picked_points,
     pick_points_utils,
 )
-from src.algorithmForNN.fileUtils import (
+from src.algorithmsForPointCloud.fileUtils import (
     get_point_cloud_from_bin_file,
     generate_labels_and_object_files,
 )
