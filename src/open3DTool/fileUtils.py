@@ -1,5 +1,5 @@
 import open3d as o3d
-from src.algorithmForNN.compressUtils import FIC, LZW
+from src.algorithmsForPointCloud.compressUtils import FIC, LZW
 
 
 def update_label_files(

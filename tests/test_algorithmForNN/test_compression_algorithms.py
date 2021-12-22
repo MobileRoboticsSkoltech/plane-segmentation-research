@@ -1,4 +1,4 @@
-from src.algorithmForNN.compressUtils import FIC, LZW
+from src.algorithmsForPointCloud.compressUtils import FIC, LZW
 
 import os
 

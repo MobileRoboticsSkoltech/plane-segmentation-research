@@ -3,7 +3,7 @@ from src.open3DTool.planeUtils import (
     get_indexes_of_points_on_plane,
     get_plane_using_SVD,
 )
-from src.algorithmForNN.pointCloudUtils import (
+from src.algorithmsForPointCloud.pointCloudUtils import (
     convert_point_cloud_to_numpy_array,
     convert_numpy_array_to_point_cloud,
 )
